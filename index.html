@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Collaborative Editor</title>
+    <style>
+      html, body {
+          height: 100%;
+          width: 100%;
+          background-color:#333;
+          font-family: arial;
+      }
+      #editor-wrapper {
+          width: 70%;
+          margin-left:auto;
+          margin-right:auto;
+          margin-top:3em;
+      }
+      #username {
+          color: #f3f3f3;
+      }
+      .cuser {
+          color: #999;
+      }
+      .ouser {
+          color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+      <div id="editor-wrapper">
+        <span class="cuser">Current User: </span><span id="username"></span><br>
+        <textarea id="editor"></textarea>    
+      </div>
+    <script src="/bower_components/codemirror/lib/codemirror.js"></script>
+    <link rel="stylesheet" href="/bower_components/codemirror/lib/codemirror.css">
+    <script src="/bower_components/codemirror/mode/javascript/javascript.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/bower_components/jquery/dist/jquery.min.js"></script>
+    <script>
+    
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, "\\$&");
+            var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, " "));
+        }
+        var room = getParameterByName('room');
+        var user = getParameterByName('user');
+        document.getElementById("username").innerHTML = user;
+        
+        var myCodeMirror = CodeMirror.fromTextArea(document.getElementById("editor"), {
+            lineNumbers: true,
+            mode: "javascript"
+        });
+      
+        var socket = io();
+        
+        $.ajax({
+            url: '/getData/' + room,
+            success: function(result, status, xhr) {
+                myCodeMirror.setValue(result.value);
+                console.log(result);
+            }
+        });
+        
+        myCodeMirror.on('keyup', function () {
+            var msg = {
+                id: room,
+                user: user,
+                value: myCodeMirror.getValue()
+            }
+            socket.emit('document-update',msg);
+        });
+      
+        socket.on('doc', function(msg){
+            if(msg.new_val.id === room && msg.new_val.user != user) {
+                var current_pos = myCodeMirror.getCursor();
+                myCodeMirror.getDoc().setValue(msg.new_val.value);
+                myCodeMirror.setCursor(current_pos);    
+            }
+        });
+      
+    </script>
+  </body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "name": "rethinkdb-collab",
+  "description": "A realtime collaborative editor using rethinkdb",
+  "main": "index.js",
+  "authors": [
+    "Shannon Duncan aka ShadowCodex"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "codemirror": "^5.16.0",
+    "jquery": "^3.0.0"
+  }
+}
